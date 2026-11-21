@@ -1,0 +1,36 @@
+digraph G {
+  rankdir=LR; bgcolor="white"; pad=0.3; nodesep=0.35; ranksep=0.7;
+  node [fontname="Helvetica", fontsize=12];
+  edge [fontname="Helvetica", fontsize=10, color="#52514e", arrowsize=0.7];
+
+  subgraph cluster_gz {
+    label="Gazebo Harmonic"; fontname="Helvetica-Bold"; style="rounded,filled"; fillcolor="#fdf1ea"; color="#eb6834";
+    gz_ack   [label="AckermannSteering\nplugin", shape=box, style="rounded,filled", fillcolor="white", color="#eb6834"];
+    gz_jsp   [label="JointStatePublisher\nplugin", shape=box, style="rounded,filled", fillcolor="white", color="#eb6834"];
+    gz_odom  [label="OdometryPublisher\n(ground truth)", shape=box, style="rounded,filled", fillcolor="white", color="#eb6834"];
+  }
+
+  bridge [label="ros_gz_bridge", shape=box, style="rounded,filled", fillcolor="#e9f1fb", color="#2a78d6"];
+  rsp    [label="robot_state_publisher", shape=box, style="rounded,filled", fillcolor="#e9f1fb", color="#2a78d6"];
+  pp     [label="pure_pursuit", shape=box, style="rounded,filled,bold", fillcolor="#e6f6ef", color="#1baf7a"];
+  log    [label="data_logger", shape=box, style="rounded,filled,bold", fillcolor="#e6f6ef", color="#1baf7a"];
+  rviz   [label="RViz2", shape=box, style="rounded,filled", fillcolor="#e9f1fb", color="#2a78d6"];
+  csv    [label="results/*.csv", shape=note, style=filled, fillcolor="#f4f4f2", color="#9a9993"];
+
+  node [shape=plaintext, fontname="Courier", fontsize=11, fontcolor="#0b0b0b"];
+  t_cmd  [label="/cmd_vel"]; t_odom [label="/odom"]; t_gt [label="/ground_truth/odom"];
+  t_js   [label="/joint_states"]; t_tf [label="/tf"]; t_clk [label="/clock"];
+  t_path [label="/planned_path"]; t_ref [label="/tracking/reference\n/tracking/lookahead"];
+  t_rdy  [label="/data_logger/ready"];
+
+  gz_ack -> bridge [label="odom, tf"]; gz_odom -> bridge; gz_jsp -> bridge;
+  bridge -> gz_ack [label="cmd_vel", style=dashed];
+  bridge -> t_odom; bridge -> t_gt; bridge -> t_js; bridge -> t_tf; bridge -> t_clk;
+  t_cmd -> bridge;
+  t_js -> rsp; rsp -> t_tf [label="tf_static"];
+  t_odom -> pp; pp -> t_cmd; pp -> t_path; pp -> t_ref;
+  t_odom -> log; t_gt -> log; t_ref -> log; t_cmd -> log; t_path -> log;
+  log -> t_rdy; t_rdy -> pp;
+  log -> csv;
+  t_path -> rviz; t_tf -> rviz; t_ref -> rviz;
+}
