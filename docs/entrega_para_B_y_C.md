@@ -6,7 +6,7 @@
 - Nombres de los componentes: `base_link`, `front_left_steer`, `front_right_steer`, `front_left_wheel`, `front_right_wheel`, `rear_left_wheel`, `rear_right_wheel`.
 - Joints de dirección: revolute en Z, ±18°. Joints de rueda: revolute en el eje de la rueda.
 - Parámetros: L = 0.1339 m, W = 0.180 m, r = 0.040 m, ancho de rueda 0.020 m, δmáx = 18°, chasis 0.240 × 0.120 × 0.045 m.
-- Meshes del ensamblaje de Fusion ya integrados (visual); ver `cambiar_modelo_cad.md`.
+- Meshes del ensamblaje de Fusion ya integrados como apariencia del robot (ver sección 9 del README).
 
 **Para las diapositivas:**
 - Diapositiva 6 (de Fusion a Gazebo): `docs/nodes_topics.png` (o `.svg`)

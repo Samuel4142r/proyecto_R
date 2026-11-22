@@ -192,6 +192,6 @@ Pure Pursuit sigue la ruta con ~1 cm RMS respecto a la pose que tiene como entra
 
 Gráficas en [results/plots/](results/plots/), tabla completa en [results/plots/metrics.md](results/plots/metrics.md).
 
-## 9. Cambiar al modelo CAD (Fusion 360 → URDF)
+## 9. Modelo CAD (Fusion 360 → Gazebo)
 
-Ver [docs/cambiar_modelo_cad.md](docs/cambiar_modelo_cad.md).
+El robot se diseñó en Fusion 360 y se exportó con el add-in *fusion2urdf-ros2*. Los meshes STL del ensamblaje están en `src/ackermann_description/meshes/` y se usan como apariencia del robot. Las masas, colisiones y joints se definen en `src/ackermann_description/urdf/ackermann.urdf.xacro` con los parámetros de diseño de la tabla, porque el URDF exportado traía masas y joints de dirección incorrectos.
