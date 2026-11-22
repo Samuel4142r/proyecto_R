@@ -6,3 +6,7 @@ __pycache__/
 .pytest_cache/
 results/logs/
 *.mp4
+
+# Corridas manuales y datos del modelo anterior (no se suben)
+results/run_*.csv
+results/modelo_anterior/
