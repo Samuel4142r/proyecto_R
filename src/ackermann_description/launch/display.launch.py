@@ -16,7 +16,7 @@ def generate_launch_description():
         value_type=str)
 
     return LaunchDescription([
-        DeclareLaunchArgument('use_meshes', default_value='false'),
+        DeclareLaunchArgument('use_meshes', default_value='true'),
         Node(package='robot_state_publisher', executable='robot_state_publisher',
              parameters=[{'robot_description': robot_description}]),
         Node(package='joint_state_publisher_gui', executable='joint_state_publisher_gui'),

@@ -4,9 +4,9 @@
 
 **Convenciones que debe respetar el CAD:**
 - Nombres de los componentes: `base_link`, `front_left_steer`, `front_right_steer`, `front_left_wheel`, `front_right_wheel`, `rear_left_wheel`, `rear_right_wheel`.
-- Joints de dirección: revolute en Z, ±30°. Joints de rueda: revolute en el eje de la rueda.
-- Parámetros: L = 0.30 m, W = 0.22 m, r = 0.05 m, ancho de rueda 0.03 m, chasis 0.40 × 0.20 × 0.05 m.
-- Si los meshes llegan tarde, la simulación ya funciona con el modelo provisional. Se integran después con `use_meshes:=true` (ver `cambiar_modelo_cad.md`).
+- Joints de dirección: revolute en Z, ±18°. Joints de rueda: revolute en el eje de la rueda.
+- Parámetros: L = 0.1339 m, W = 0.180 m, r = 0.040 m, ancho de rueda 0.020 m, δmáx = 18°, chasis 0.240 × 0.120 × 0.045 m.
+- Meshes del ensamblaje de Fusion ya integrados (visual); ver `cambiar_modelo_cad.md`.
 
 **Para las diapositivas:**
 - Diapositiva 6 (de Fusion a Gazebo): `docs/nodes_topics.png` (o `.svg`)
@@ -29,21 +29,21 @@
 
 | Run | Feedback | Real error max | Real error RMS | Estimated error RMS | Final odom drift | Max heading drift |
 |---|---|---|---|---|---|---|
-| 1 | wheel odometry | 71.5 cm | 36.1 cm | 1.2 cm | 68.6 cm | 7.7° |
-| 2 | wheel odometry | 71.4 cm | 36.1 cm | 1.2 cm | 68.6 cm | 7.6° |
-| 3 | wheel odometry | 71.3 cm | 36.0 cm | 1.2 cm | 68.5 cm | 7.5° |
+| 1 | wheel odometry | 46.8 cm | 23.8 cm | 1.2 cm | 45.6 cm | 4.9° |
+| 2 | wheel odometry | 46.8 cm | 23.8 cm | 1.2 cm | 45.6 cm | 4.9° |
+| 3 | wheel odometry | 47.0 cm | 23.8 cm | 1.2 cm | 45.6 cm | 4.9° |
 | GT | ground-truth pose | 2.5 cm | 1.3 cm | — | — | — |
 
 **Datos del experimento para Métodos/Resultados:**
 - Simulador: Gazebo Harmonic (gz-sim 8.15), paso de física de 1 ms, ROS 2 Jazzy.
 - Plugins: `AckermannSteering` (tracción trasera y dirección delantera, odometría de ruedas), `JointStatePublisher`, `OdometryPublisher` (pose real).
-- Trayectoria: lemniscata de Gerono x = 3.5 sin t, y = 1.5 sin 2t; radio de curvatura mínimo ≈ 1.0 m (radio mínimo de giro del robot: 0.52 m).
-- Controlador: Pure Pursuit a 30 Hz, Ld = 0.6 m, δ saturado a ±30°.
+- Trayectoria: lemniscata de Gerono x = 3.5 sin t, y = 1.5 sin 2t; radio de curvatura mínimo ≈ 1.0 m (radio mínimo de giro del robot: 0.412 m).
+- Controlador: Pure Pursuit a 30 Hz, Ld = 0.6 m, δ saturado a ±18°.
 - Registro a 20 Hz (CSV): pose deseada, odometría, pose real y comandos.
 
 **Interpretación (para la sección VI y la VII):**
 1. El controlador sigue la ruta con ~1.2 cm RMS respecto a la pose que recibe como entrada.
-2. El error real (36 cm RMS) viene de la **deriva de la odometría de ruedas**: el deslizamiento en las curvas acumula hasta 7.6° de error de rumbo y 68.6 cm de error de posición al final (≈ 3.5 % de la distancia recorrida).
+2. El error real (23.8 cm RMS) viene de la **deriva de la odometría de ruedas**: el deslizamiento en las curvas acumula hasta 4.9° de error de rumbo y 45.6 cm de error de posición al final (≈ 2.3 % de la distancia recorrida).
 3. Con la pose real como realimentación, el error real baja a 1.3 cm RMS (2.5 cm máx.). La mejora propuesta en la sección VII (EKF que fusione odometría + IMU + GPS con `robot_localization`) ataca justo este problema.
 4. Las 3 corridas son casi idénticas (diferencias < 0.5 mm en la deriva): la simulación es repetible.
 

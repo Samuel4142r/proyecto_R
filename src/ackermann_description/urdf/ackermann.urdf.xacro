@@ -1,46 +1,51 @@
 <?xml version="1.0"?>
 <!--
-  Robot Ackermann — modelo PROVISIONAL (cajas y cilindros).
-  Parametros del Integrante B (tabla de parametros):
-    L = 0.30 m, W = 0.22 m, r = 0.05 m, ancho rueda = 0.03 m,
-    delta_max = 30 deg, chasis 0.40 x 0.20 x 0.05 m, m_chasis = 2.0 kg, m_rueda = 0.2 kg
+  Robot Ackermann. Parametros de la tabla de B (CAD Fusion 360, nov-2026):
+    L = 0.1339 m, W = 0.180 m, r = 0.040 m (D = 80 mm), ancho rueda b = 0.020 m,
+    delta_max = 18 deg (0.314 rad), R_min = L / tan(delta_max) = 0.412 m,
+    chasis 0.240 x 0.120 x 0.045 m.
+  Masas: la tabla no las da y las del export de Fusion no son realistas
+  (8.7 kg de chasis por material por defecto), asi que se usan valores estimados.
 
   Convencion de marcos:
     base_link = punto medio del EJE TRASERO, a la altura de los ejes de rueda,
                 X hacia adelante, Y a la izquierda, Z hacia arriba.
     (Es el punto de referencia del modelo bicicleta y de Pure Pursuit.)
 
-  Nombres de links/joints acordados con B (NO cambiarlos al importar el CAD):
-    links : base_link, front_left_steer, front_right_steer,
-            front_left_wheel, front_right_wheel, rear_left_wheel, rear_right_wheel
-    joints: front_left_steer_joint, front_right_steer_joint,
-            front_left_wheel_joint, front_right_wheel_joint,
-            rear_left_wheel_joint,  rear_right_wheel_joint
-
-  Para usar los meshes STL de B:  xacro ... use_meshes:=true
-  (los archivos deben llamarse meshes/<nombre_del_link>.stl, en metros).
+  Meshes (use_meshes:=true, por defecto): STL exportados de Fusion en mm, en el
+  marco GLOBAL del ensamblaje, donde el frente del carro apunta a -Y, la izquierda a +X,
+  el eje trasero esta en y = +65 mm y el delantero en y = -70.1 mm, z = 40 mm.
+  Por eso cada visual lleva rpy = (0, 0, pi/2) y un desplazamiento que lleva el
+  centro de su pieza al origen de su link. Fisica (colisiones/inercias) = primitivas.
 -->
 <robot name="ackermann_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:arg name="use_meshes" default="false"/>
+  <xacro:arg name="use_meshes" default="true"/>
   <xacro:property name="use_meshes" value="$(arg use_meshes)"/>
 
   <!-- ===================== Parametros (fuente unica) ===================== -->
   <xacro:property name="PI" value="3.141592653589793"/>
-  <xacro:property name="wheel_base"   value="0.30"/>   <!-- L -->
-  <xacro:property name="track"        value="0.22"/>   <!-- W -->
-  <xacro:property name="wheel_radius" value="0.05"/>   <!-- r -->
-  <xacro:property name="wheel_width"  value="0.03"/>
-  <xacro:property name="steer_max"    value="${30.0 * PI / 180.0}"/>
-  <xacro:property name="chassis_x"    value="0.40"/>
-  <xacro:property name="chassis_y"    value="0.20"/>
-  <xacro:property name="chassis_z"    value="0.05"/>
-  <xacro:property name="chassis_mass" value="2.0"/>
-  <xacro:property name="wheel_mass"   value="0.2"/>
-  <xacro:property name="steer_mass"   value="0.05"/>
-  <!-- El chasis esta centrado entre los dos ejes -->
-  <xacro:property name="chassis_offset_x" value="${wheel_base / 2.0}"/>
-  <xacro:property name="chassis_offset_z" value="0.0"/>
+  <xacro:property name="wheel_base"   value="0.1339"/>  <!-- L -->
+  <xacro:property name="track"        value="0.180"/>   <!-- W -->
+  <xacro:property name="wheel_radius" value="0.040"/>   <!-- r -->
+  <xacro:property name="wheel_width"  value="0.020"/>   <!-- b -->
+  <xacro:property name="steer_max"    value="${18.0 * PI / 180.0}"/>
+  <xacro:property name="chassis_x"    value="0.240"/>
+  <xacro:property name="chassis_y"    value="0.120"/>
+  <xacro:property name="chassis_z"    value="0.045"/>
+  <xacro:property name="chassis_mass" value="1.2"/>
+  <xacro:property name="wheel_mass"   value="0.06"/>
+  <xacro:property name="steer_mass"   value="0.02"/>
+  <!-- Centro del chasis respecto a base_link (medido en el STL del CAD) -->
+  <xacro:property name="chassis_offset_x" value="0.075"/>
+  <xacro:property name="chassis_offset_z" value="0.0075"/>
+
+  <!-- Posicion de los ejes en el marco global del CAD [m] (ver encabezado) -->
+  <xacro:property name="cad_rear_y"  value="0.065"/>    <!-- eje trasero: y = +65 mm -->
+  <xacro:property name="cad_front_y" value="0.0701"/>   <!-- eje delantero: y = -70.1 mm -->
+  <xacro:property name="cad_axle_z"  value="0.040"/>
+  <xacro:property name="mm"          value="0.001 0.001 0.001"/>
+  <xacro:property name="mesh_dir"    value="package://ackermann_description/meshes"/>
 
   <!-- ===================== Materiales ===================== -->
   <material name="chassis_blue"><color rgba="0.10 0.35 0.75 1.0"/></material>
@@ -62,6 +67,16 @@
              izz="${m * (3*r*r + h*h) / 12.0}"/>
   </xacro:macro>
 
+  <!-- Visual de un STL del CAD dentro de un link. (ox, oy, oz) = origen del
+       marco CAD expresado en el link; el CAD se rota 90 deg (su -Y es nuestro +X). -->
+  <xacro:macro name="cad_visual" params="mesh ox oy oz material">
+    <visual>
+      <origin xyz="${ox} ${oy} ${oz}" rpy="0 0 ${PI/2}"/>
+      <geometry><mesh filename="${mesh_dir}/${mesh}.stl" scale="${mm}"/></geometry>
+      <material name="${material}"/>
+    </visual>
+  </xacro:macro>
+
   <!-- ===================== base_link (eje trasero) ===================== -->
   <link name="base_link"/>
 
@@ -74,17 +89,22 @@
   </joint>
 
   <link name="chassis">
-    <visual>
-      <xacro:if value="${use_meshes}">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-        <geometry><mesh filename="package://ackermann_description/meshes/base_link.stl"/></geometry>
-      </xacro:if>
-      <xacro:unless value="${use_meshes}">
+    <xacro:if value="${use_meshes}">
+      <!-- Chasis, lidar y varillaje de direccion (este ultimo fijo: solo visual) -->
+      <xacro:property name="cx" value="${cad_rear_y - chassis_offset_x}"/>
+      <xacro:property name="cz" value="${-cad_axle_z - chassis_offset_z}"/>
+      <xacro:cad_visual mesh="base_link"    ox="${cx}" oy="0" oz="${cz}" material="chassis_blue"/>
+      <xacro:cad_visual mesh="lidar_link_1" ox="${cx}" oy="0" oz="${cz}" material="tire_black"/>
+      <xacro:cad_visual mesh="rear_left_1"  ox="${cx}" oy="0" oz="${cz}" material="steer_grey"/>
+      <xacro:cad_visual mesh="rear_right_1" ox="${cx}" oy="0" oz="${cz}" material="steer_grey"/>
+    </xacro:if>
+    <xacro:unless value="${use_meshes}">
+      <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry><box size="${chassis_x} ${chassis_y} ${chassis_z}"/></geometry>
-      </xacro:unless>
-      <material name="chassis_blue"/>
-    </visual>
+        <material name="chassis_blue"/>
+      </visual>
+    </xacro:unless>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry><box size="${chassis_x} ${chassis_y} ${chassis_z}"/></geometry>
@@ -96,21 +116,24 @@
     </inertial>
   </link>
 
-  <!-- Soporte / carcasa superior (solo visual, masa incluida en el chasis) -->
-  <joint name="top_cover_joint" type="fixed">
-    <parent link="chassis"/>
-    <child link="top_cover"/>
-    <origin xyz="-0.02 0 ${chassis_z / 2.0 + 0.02}" rpy="0 0 0"/>
-  </joint>
-  <link name="top_cover">
-    <visual>
-      <geometry><box size="0.20 0.14 0.04"/></geometry>
-      <material name="top_orange"/>
-    </visual>
-  </link>
+  <!-- Carcasa superior provisional (solo sin meshes) -->
+  <xacro:unless value="${use_meshes}">
+    <joint name="top_cover_joint" type="fixed">
+      <parent link="chassis"/>
+      <child link="top_cover"/>
+      <origin xyz="-0.01 0 ${chassis_z / 2.0 + 0.015}" rpy="0 0 0"/>
+    </joint>
+    <link name="top_cover">
+      <visual>
+        <geometry><box size="0.12 0.08 0.03"/></geometry>
+        <material name="top_orange"/>
+      </visual>
+    </link>
+  </xacro:unless>
 
-  <!-- ===================== Ruedas traseras (traccion) ===================== -->
-  <xacro:macro name="wheel" params="name parent x y">
+  <!-- ===================== Ruedas ===================== -->
+  <!-- mesh: STL del CAD; (ox, oy) = origen del marco CAD visto desde el centro de la rueda -->
+  <xacro:macro name="wheel" params="name parent x y mesh ox oy">
     <joint name="${name}_joint" type="continuous">
       <parent link="${parent}"/>
       <child link="${name}"/>
@@ -119,17 +142,16 @@
       <dynamics damping="0.001" friction="0.0"/>
     </joint>
     <link name="${name}">
-      <visual>
-        <xacro:if value="${use_meshes}">
-          <origin xyz="0 0 0" rpy="0 0 0"/>
-          <geometry><mesh filename="package://ackermann_description/meshes/${name}.stl"/></geometry>
-        </xacro:if>
-        <xacro:unless value="${use_meshes}">
+      <xacro:if value="${use_meshes}">
+        <xacro:cad_visual mesh="${mesh}" ox="${ox}" oy="${oy}" oz="${-cad_axle_z}" material="tire_black"/>
+      </xacro:if>
+      <xacro:unless value="${use_meshes}">
+        <visual>
           <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
           <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
-        </xacro:unless>
-        <material name="tire_black"/>
-      </visual>
+          <material name="tire_black"/>
+        </visual>
+      </xacro:unless>
       <collision>
         <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
         <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
@@ -149,42 +171,47 @@
     </gazebo>
   </xacro:macro>
 
-  <xacro:wheel name="rear_left_wheel"  parent="base_link" x="0.0" y="${ track / 2.0}"/>
-  <xacro:wheel name="rear_right_wheel" parent="base_link" x="0.0" y="${-track / 2.0}"/>
+  <!-- Traseras (traccion). En el CAD la izquierda es +X: wheel_left_back_1 -->
+  <xacro:wheel name="rear_left_wheel"  parent="base_link" x="0.0" y="${ track / 2.0}"
+               mesh="wheel_left_back_1"  ox="${cad_rear_y}" oy="${-track / 2.0}"/>
+  <xacro:wheel name="rear_right_wheel" parent="base_link" x="0.0" y="${-track / 2.0}"
+               mesh="wheel_right_back_1" ox="${cad_rear_y}" oy="${ track / 2.0}"/>
 
   <!-- ===================== Direccion delantera ===================== -->
-  <xacro:macro name="steer" params="side y">
+  <xacro:macro name="steer" params="side y wheel_mesh axle_mesh">
     <joint name="front_${side}_steer_joint" type="revolute">
       <parent link="base_link"/>
       <child link="front_${side}_steer"/>
       <origin xyz="${wheel_base} ${y} 0" rpy="0 0 0"/>
       <axis xyz="0 0 1"/>
-      <limit lower="${-steer_max}" upper="${steer_max}" effort="10.0" velocity="5.0"/>
+      <limit lower="${-steer_max}" upper="${steer_max}" effort="5.0" velocity="5.0"/>
       <dynamics damping="0.01" friction="0.0"/>
     </joint>
     <link name="front_${side}_steer">
-      <visual>
-        <xacro:if value="${use_meshes}">
+      <xacro:if value="${use_meshes}">
+        <xacro:cad_visual mesh="${axle_mesh}" ox="${-cad_front_y}" oy="${-y}" oz="${-cad_axle_z}" material="steer_grey"/>
+      </xacro:if>
+      <xacro:unless value="${use_meshes}">
+        <visual>
           <origin xyz="0 0 0" rpy="0 0 0"/>
-          <geometry><mesh filename="package://ackermann_description/meshes/front_${side}_steer.stl"/></geometry>
-        </xacro:if>
-        <xacro:unless value="${use_meshes}">
-          <origin xyz="0 0 0" rpy="0 0 0"/>
-          <geometry><cylinder radius="0.008" length="0.05"/></geometry>
-        </xacro:unless>
-        <material name="steer_grey"/>
-      </visual>
+          <geometry><cylinder radius="0.006" length="0.04"/></geometry>
+          <material name="steer_grey"/>
+        </visual>
+      </xacro:unless>
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <mass value="${steer_mass}"/>
-        <inertia ixx="1.2e-5" ixy="0" ixz="0" iyy="1.2e-5" iyz="0" izz="2.0e-6"/>
+        <inertia ixx="5.0e-6" ixy="0" ixz="0" iyy="5.0e-6" iyz="0" izz="1.0e-6"/>
       </inertial>
     </link>
-    <xacro:wheel name="front_${side}_wheel" parent="front_${side}_steer" x="0.0" y="0.0"/>
+    <xacro:wheel name="front_${side}_wheel" parent="front_${side}_steer" x="0.0" y="0.0"
+                 mesh="${wheel_mesh}" ox="${-cad_front_y}" oy="${-y}"/>
   </xacro:macro>
 
-  <xacro:steer side="left"  y="${ track / 2.0}"/>
-  <xacro:steer side="right" y="${-track / 2.0}"/>
+  <!-- Ojo: en el export de Fusion los nombres de las ruedas delanteras estan cruzados
+       (wheel_right_front_1 esta en +X = izquierda). -->
+  <xacro:steer side="left"  y="${ track / 2.0}" wheel_mesh="wheel_right_front_1" axle_mesh="axis_left_1"/>
+  <xacro:steer side="right" y="${-track / 2.0}" wheel_mesh="wheel_left_front_1"  axle_mesh="axis_right_1"/>
 
   <!-- ===================== Plugins de Gazebo Harmonic ===================== -->
   <xacro:include filename="$(find ackermann_description)/urdf/ackermann.gazebo.xacro"/>

@@ -4,7 +4,7 @@ pure_pursuit:
     use_sim_time: true
     # Trayectoria: figure8 | oval | custom
     path_type: figure8
-    figure8_a: 3.5          # semieje en x [m]  -> la figura mide 7 m x 3 m (R_min ~ 1 m)
+    figure8_a: 3.5          # semieje en x [m]  -> la figura mide 7 m x 3 m (R_curva_min ~ 1 m > R_giro_robot = 0.41 m)
     figure8_b: 1.5          # amplitud en y [m]
     oval_straight: 3.0      # [m]
     oval_radius: 1.2        # [m]
@@ -26,8 +26,8 @@ pure_pursuit:
     odom_topic: /odom
 
     # Parametros del robot (tabla de B)
-    wheel_base: 0.30        # L [m]
-    max_steering_angle: 0.5236  # 30 deg [rad]
+    wheel_base: 0.1339      # L [m]
+    max_steering_angle: 0.3142  # 18 deg [rad]
 
 data_logger:
   ros__parameters:

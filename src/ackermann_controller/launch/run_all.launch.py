@@ -19,7 +19,7 @@ def generate_launch_description():
     lc = LaunchConfiguration
     args = ['headless', 'rviz', 'use_meshes', 'path_type', 'linear_speed',
             'lookahead_distance', 'laps', 'odom_topic', 'log', 'output_dir', 'run_name']
-    defaults = {'headless': 'false', 'rviz': 'true', 'use_meshes': 'false',
+    defaults = {'headless': 'false', 'rviz': 'true', 'use_meshes': 'true',
                 'path_type': 'figure8', 'linear_speed': '0.5', 'lookahead_distance': '0.6',
                 'laps': '1', 'odom_topic': '/odom', 'log': 'true', 'output_dir': os.path.join(os.getcwd(), 'results'),
                 'run_name': ''}

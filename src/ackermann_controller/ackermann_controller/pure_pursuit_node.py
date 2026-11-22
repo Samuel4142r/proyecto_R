@@ -52,8 +52,8 @@ class PurePursuit(Node):
         p('linear_speed', 0.5)             # [m/s]
         p('lookahead_distance', 0.6)       # Ld minimo [m]
         p('lookahead_gain', 0.0)           # Ld = Ld0 + k*v
-        p('wheel_base', 0.30)              # L [m]
-        p('max_steering_angle', 0.5236)    # 30 deg
+        p('wheel_base', 0.1339)            # L [m]
+        p('max_steering_angle', 0.3142)    # 18 deg
         p('goal_tolerance', 0.10)          # [m]
         p('control_rate', 30.0)            # [Hz]
         p('start_delay', 2.0)              # [s] tiempo de simulacion antes de arrancar

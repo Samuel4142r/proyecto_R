@@ -43,7 +43,7 @@ def generate_launch_description():
         DeclareLaunchArgument('headless', default_value='false',
                               description='true = solo servidor de Gazebo (sin GUI)'),
         DeclareLaunchArgument('rviz', default_value='true'),
-        DeclareLaunchArgument('use_meshes', default_value='false',
+        DeclareLaunchArgument('use_meshes', default_value='true',
                               description='true = usar los STL del CAD de B'),
         DeclareLaunchArgument('x', default_value='0.0'),
         DeclareLaunchArgument('y', default_value='0.0'),

@@ -1,5 +1,7 @@
 # Integración del modelo CAD (Fusion 360) en la simulación
 
+> **Estado (2026-11-22): integrado con la Opción A.** Los STL de `ensamblaje_description` están en `src/ackermann_description/meshes/` con sus nombres originales de Fusion, y el Xacro los rota 90° (en el CAD el frente apunta a −Y) y los centra en cada link. No se usó el URDF exportado porque trae masas irreales (chasis 8.7 kg), dirección `continuous` sin límites con ambos pivotes en el centro, y los nombres de las ruedas delanteras cruzados. Nota: en el CAD la distancia entre ejes mide 135.1 mm; la simulación usa 133.87 mm de la tabla.
+
 El robot provisional usa cajas y cilindros con los parámetros de la tabla. Hay dos formas de integrar el modelo de B.
 
 ## Opción A (recomendada): solo cambiar los meshes visuales

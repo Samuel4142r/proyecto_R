@@ -71,7 +71,7 @@ Argumentos útiles:
 | `run_name` | fecha y hora | nombre del CSV |
 | `headless` | `false` | `true` = Gazebo sin interfaz gráfica |
 | `rviz` | `true` | abrir RViz2 |
-| `use_meshes` | `false` | `true` = usar los STL del CAD |
+| `use_meshes` | `true` | `false` = modelo de cajas y cilindros (sin los STL del CAD) |
 
 Ejemplo: `ros2 launch ackermann_controller run_all.launch.py path_type:=oval laps:=2 run_name:=oval_1`
 
@@ -138,14 +138,16 @@ proyecto_R/
 
 | Parámetro | Símbolo | Valor |
 |---|---|---|
-| Distancia entre ejes | L | 0.30 m |
-| Ancho de vía | W | 0.22 m |
-| Radio de rueda | r | 0.05 m |
-| Ancho de rueda | — | 0.03 m |
-| Ángulo máximo de dirección | δmáx | 30° |
-| Radio mínimo de giro | R = L / tan δmáx | 0.52 m |
-| Chasis | — | 0.40 × 0.20 × 0.05 m, 2.0 kg |
-| Masa de cada rueda | — | 0.2 kg |
+| Distancia entre ejes | L | 0.1339 m |
+| Ancho de vía | W | 0.180 m |
+| Radio de rueda | r | 0.040 m (Ø 80 mm) |
+| Ancho de rueda | b | 0.020 m |
+| Ángulo máximo de dirección | δmáx | ±18° (0.314 rad) |
+| Radio mínimo de giro | R = L / tan δmáx | 0.412 m |
+| Chasis | — | 0.240 × 0.120 × 0.045 m, 1.2 kg (masa estimada) |
+| Masa de cada rueda | — | 0.06 kg (estimada) |
+
+Fuente: tabla de parámetros y ensamblaje de Fusion 360 de B. Los STL del CAD están en `src/ackermann_description/meshes/` y se usan como visual (`use_meshes:=true`, por defecto); colisiones e inercias usan primitivas con estas medidas.
 
 El marco `base_link` está en el **punto medio del eje trasero**, a la altura de los ejes de las ruedas, con X hacia adelante y Z hacia arriba. Es el punto de referencia del modelo bicicleta y de Pure Pursuit.
 
@@ -169,7 +171,7 @@ El marco `base_link` está en el **punto medio del eje trasero**, a la altura de
 Con el robot en el eje trasero y un punto objetivo a una distancia `Ld` sobre la ruta:
 
 - α = ángulo entre el rumbo del robot y la recta que lo une con el punto look-ahead
-- δ = arctan(2 L sin α / Ld)  (saturado a ±30°)
+- δ = arctan(2 L sin α / Ld)  (saturado a ±18°)
 - ω = v tan δ / L, que se publica en `/cmd_vel`. El plugin AckermannSteering lo convierte de vuelta a δ y reparte los ángulos de las ruedas izquierda y derecha según la condición de Ackermann.
 
 El índice del punto más cercano solo avanza hacia adelante, así el robot no salta de tramo en el cruce de la figura en 8. Cerca de la meta la velocidad se reduce y al final se publica `/cmd_vel = 0`.
@@ -178,15 +180,15 @@ El índice del punto más cercano solo avanza hacia adelante, así el robot no s
 
 | Corrida | Realimentación | Error real máx. | Error real RMS | Error estimado RMS | Deriva final de la odometría | Deriva máx. de rumbo |
 |---|---|---|---|---|---|---|
-| fig8_run1 | odometría de ruedas | 71.5 cm | 36.1 cm | 1.2 cm | 68.6 cm (3.5 %) | 7.7° |
-| fig8_run2 | odometría de ruedas | 71.4 cm | 36.1 cm | 1.2 cm | 68.6 cm | 7.6° |
-| fig8_run3 | odometría de ruedas | 71.3 cm | 36.0 cm | 1.2 cm | 68.5 cm | 7.5° |
+| fig8_run1 | odometría de ruedas | 46.8 cm | 23.8 cm | 1.2 cm | 45.6 cm (2.3 %) | 4.9° |
+| fig8_run2 | odometría de ruedas | 46.8 cm | 23.8 cm | 1.2 cm | 45.6 cm | 4.9° |
+| fig8_run3 | odometría de ruedas | 47.0 cm | 23.8 cm | 1.2 cm | 45.6 cm | 4.9° |
 | fig8_gt | pose real (ground truth) | **2.5 cm** | **1.3 cm** | — | — | — |
 
 - **Error real**: distancia de la pose real (Gazebo) a la ruta deseada.
 - **Error estimado**: distancia de la pose de odometría a la ruta, es decir, lo que "ve" el controlador.
 
-Pure Pursuit sigue la ruta con ~1 cm RMS respecto a la pose que tiene como entrada. El error real con odometría de ruedas viene casi por completo de la deriva de la odometría: el deslizamiento de las ruedas en las curvas acumula ~7.6° de error de rumbo. Fusionar la odometría con una IMU o GPS mediante un EKF (`robot_localization`) atacaría justo este problema.
+Pure Pursuit sigue la ruta con ~1 cm RMS respecto a la pose que tiene como entrada. El error real con odometría de ruedas viene casi por completo de la deriva de la odometría: el deslizamiento de las ruedas en las curvas acumula ~4.9° de error de rumbo. Fusionar la odometría con una IMU o GPS mediante un EKF (`robot_localization`) atacaría justo este problema.
 
 Gráficas en [results/plots/](results/plots/), tabla completa en [results/plots/metrics.md](results/plots/metrics.md).
 
