@@ -21,7 +21,7 @@ digraph G {
   t_cmd  [label="/cmd_vel"]; t_odom [label="/odom"]; t_gt [label="/ground_truth/odom"];
   t_js   [label="/joint_states"]; t_tf [label="/tf"]; t_clk [label="/clock"];
   t_path [label="/planned_path"]; t_ref [label="/tracking/reference\n/tracking/lookahead"];
-  t_rdy  [label="/data_logger/ready"];
+  t_rdy  [label="/data_logger/ready"]; t_exec [label="/executed_path"];
 
   gz_ack -> bridge [label="odom, tf"]; gz_odom -> bridge; gz_jsp -> bridge;
   bridge -> gz_ack [label="cmd_vel", style=dashed];
@@ -31,6 +31,6 @@ digraph G {
   t_odom -> pp; pp -> t_cmd; pp -> t_path; pp -> t_ref;
   t_odom -> log; t_gt -> log; t_ref -> log; t_cmd -> log; t_path -> log;
   log -> t_rdy; t_rdy -> pp;
-  log -> csv;
+  log -> csv; log -> t_exec; t_exec -> rviz;
   t_path -> rviz; t_tf -> rviz; t_ref -> rviz;
 }
