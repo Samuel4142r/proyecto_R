@@ -4,6 +4,8 @@ Archivos generados en `output_dir`:
   <run>.csv       t, pose deseada, odometria, ground truth, comandos y error lateral
   <run>_path.csv  la trayectoria planificada completa (x, y)
 
+Ademas publica /executed_path (nav_msgs/Path) con la ruta real recorrida, para RViz.
+
 Empieza a grabar cuando el controlador publica la primera referencia y cierra el
 archivo al recibir /tracking/done (o al detener el nodo con Ctrl+C).
 """
@@ -64,6 +66,11 @@ class DataLogger(Node):
         # Avisa al controlador cuando ya recibe odometria y ground truth
         self.pub_ready = self.create_publisher(Bool, '/data_logger/ready', latched)
         self.ready_sent = False
+        # Ruta REAL recorrida (ground truth), para dibujarla en RViz. Se publica en el
+        # marco 'odom' porque la pose real y la odometria arrancan en el mismo punto.
+        self.pub_executed = self.create_publisher(Path, '/executed_path', latched)
+        self.executed = Path()
+        self.executed.header.frame_id = 'odom'
         self.create_timer(1.0 / float(self.get_parameter('rate').value), self._write)
         self.get_logger().info(f'Registrando en {self.csv_path}')
 
@@ -100,6 +107,14 @@ class DataLogger(Node):
             f'{self.gt.twist.twist.linear.x:.4f}',
             f'{self.cmd.linear.x:.4f}', f'{self.cmd.angular.z:.4f}', f'{self.cte:.4f}'])
         self.rows += 1
+
+        # Agrega la pose real a la ruta recorrida y la publica
+        ps = PoseStamped()
+        ps.header.frame_id = 'odom'
+        ps.pose = g
+        self.executed.poses.append(ps)
+        self.executed.header.stamp = self.get_clock().now().to_msg()
+        self.pub_executed.publish(self.executed)
 
     def _on_done(self, msg: Bool):
         if msg.data:
