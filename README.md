@@ -194,4 +194,4 @@ Gráficas en [results/plots/](results/plots/), tabla completa en [results/plots/
 
 ## 9. Modelo CAD (Fusion 360 → Gazebo)
 
-El robot se diseñó en Fusion 360 y se exportó con el add-in *fusion2urdf-ros2*. Los meshes STL del ensamblaje están en `src/ackermann_description/meshes/` y se usan como apariencia del robot. Las masas, colisiones y joints se definen en `src/ackermann_description/urdf/ackermann.urdf.xacro` con los parámetros de diseño de la tabla, porque el URDF exportado traía masas y joints de dirección incorrectos.
+El robot se diseñó en Fusion 360 y se exportó con el add-in *fusion2urdf-ros2*. Los meshes STL del ensamblaje están en `src/ackermann_description/meshes/` y se usan como apariencia del robot. Las masas, colisiones y joints se definen en `src/ackermann_description/urdf/ackermann.urdf.xacro` con los parámetros de diseño de la tabla
